@@ -12,6 +12,8 @@ GEM
     daemons (1.1.4)
     em-hiredis (0.1.0)
       hiredis (~> 0.3.0)
+    em-synchrony (0.2.0)
+      eventmachine (>= 0.12.9)
     eventmachine (1.0.0.beta.3)
     hiredis (0.3.2)
     http_router (0.10.2)
@@ -35,6 +37,7 @@ DEPENDENCIES
   async-rack
   cramp
   em-hiredis
+  em-synchrony
   http_router
   mysql2
   thin
