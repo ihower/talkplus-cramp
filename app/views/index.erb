@@ -20,13 +20,13 @@ $(document).ready(function(){
   
   // join on click
   $('#ask a').click(function() {
-    join($('#ask input').val());
+    join($('#ask #name-input').val(), $('#ask #channel-input').val());
     $('#ask').hide();
     $('#channel').show();
     $('input#message').focus();
   });
 
-  function join(name) {
+  function join(name, channel) {
     var host = window.location.host.split(':')[0];
     var ws = new WebSocket('ws://<%= request.host_with_port %>/websocket');
 
@@ -75,7 +75,7 @@ $(document).ready(function(){
     
     // send name when joining
     ws.onopen = function() {
-      ws.send($.toJSON({ action: 'join', user: name }));
+      ws.send($.toJSON({ action: 'join', user: name, channel: channel }));
     }
   }
 });
@@ -183,7 +183,9 @@ $(document).ready(function(){
     Use a WebKit nightly or Google Chrome. 
   </div>
   <div id="ask" class="bordered" style="display: none;">
-    Name: <input type="text" id="name" /> <a href="#"><span class="join">Join!</span></a>
+    <p>Name: <input type="text" id="name-input" /></p>
+    <p>Channel: <input type="text" id="channel-input" /><p>
+    <p><a href="#"><span class="join">Join!</span></a></p>    
   </div>
   <div id="channel" class="bordered" style="display: none;">
     <div id="descr" class="bordered">

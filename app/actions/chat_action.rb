@@ -27,27 +27,29 @@ class ChatAction < Cramp::Websocket
   
   def handle_join(msg)
     @user = msg[:user]
+    @channel = msg[:channel]
+    
     subscribe
     publish :action => 'control', :user => @user, :message => 'joined the chat room'
   end
   
   def handle_leave
-    publish :action => 'control', :user => @user, :message => 'left the chat room'
+    publish :action => 'control', :user => @user, :message => 'left the chat room'    
   end
   
   def handle_message(msg)
-    publish msg.merge(:user => @user)
+    publish msg.merge(:user => @user, :channel => @channel)
   end
   
   private
 
   def subscribe
-    @sub.subscribe('chat')
+    @sub.subscribe(@channel)
     @sub.on(:message) {|channel, message| render(message) }    
   end
   
   def publish(message)
-    @pub.publish('chat', encode_json(message))
+    @pub.publish(@channel, encode_json(message))
   end
   
   def encode_json(obj)
