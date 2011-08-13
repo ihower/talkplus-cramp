@@ -1,3 +1,4 @@
+require 'digest/md5'
 class ChatAction < Cramp::Websocket
   on_start :create_redis
   on_finish :handle_leave, :destroy_redis
@@ -25,34 +26,47 @@ class ChatAction < Cramp::Websocket
     end
   end
   
-  def handle_join(msg)
-    @user = msg[:user]
-    @channel = msg[:channel]
-    
-    @channel_id = 1 # TODO: get channel_id by channel from mysql
-    @user_id = 1 # TODO: get user_id by token from mysql
-    
-    subscribe
-    publish :action => 'control', :user => @user, :message => 'joined the chat room'
-          
-    defer = CrampPubsub::Application.db.query "INSERT channel_users (channel_id, user_id, created_at) VALUES ('#{@channel_id}', '#{@user_id}', NOW())"
-    
-    # TODO
-    #defer.callback do |result|
-    #  puts "Result: #{result.inspect}"
-    #  publish :action => 'assign', :uid => '1234567890' 
-    #end
+  def call_join
+    join_callback = CrampPubsub::Application.db.query "SELECT name, id from users WHERE uid='#{@uid}'"    
+    join_callback.callback do |result|
+      @user_id = result.first["id"]
+      @username ||= result.first["name"]
+
+      subscribe
+      publish :action => 'control', :user => @username, :message => 'joined the chat room'
+
+      CrampPubsub::Application.db.query "INSERT channel_users (channel_id, user_id, created_at) VALUES ('#{@channel_id}', '#{@user_id}', NOW())"            
+    end
   end
   
+  def handle_join(msg)
+    @username = msg[:user]
+    @channel = msg[:channel]
+    @channel_id = msg[:channel_id] || 1
+    @uid = msg[:uid]
+    
+    if @uid
+      call_join           
+    else
+      @uid = Digest::MD5.hexdigest( rand(1000000).to_s + Time.now.to_s )
+      defer = CrampPubsub::Application.db.query "INSERT users (name, uid, created_at) VALUES ('#{@username}','#{@uid}',NOW());"    
+      defer.callback do |result|
+        call_join     
+      end
+    end
+    
+  end
+  
+  
   def handle_leave
-    publish :action => 'control', :user => @user, :message => 'left the chat room'    
+    publish :action => 'control', :user => @username, :message => 'left the chat room'    
     CrampPubsub::Application.db.query "DELETE channel_users where channel_id = #{@channel_id} and user_id = #{@user_id}"
   end
   
   def handle_message(msg)
-    publish msg.merge(:user => @user, :channel => @channel)
+    publish msg.merge(:user => @username, :channel => @channel)
     content = msg[:message]
-    CrampPubsub::Application.db.query "INSERT messages (channel_id, user_id, name, content, created_at) VALUES ('#{@channel_id}', '#{@user_id}', '#{@user}', '#{content}', NOW());"
+    CrampPubsub::Application.db.query "INSERT messages (channel_id, user_id, name, content, created_at) VALUES ('#{@channel_id}', '#{@user_id}', '#{@username}', '#{content}', NOW());"
   end
   
   private
