@@ -26,6 +26,8 @@ class ChatAction < Cramp::Websocket
       handle_join(msg)
     when 'message'
       handle_message(msg)
+    when 'leave'
+      handle_leave    
     else
       # skip
     end
@@ -65,10 +67,10 @@ class ChatAction < Cramp::Websocket
     
   end
   
-  
   def handle_leave
     publish :action => 'control', :user => @username, :message => 'left the chat room'    
     CrampPubsub::Application.db.query "DELETE channel_users where channel_id = #{@channel_id} and user_id = #{@user_id}"
+    finish
   end
   
   def handle_message(msg)
