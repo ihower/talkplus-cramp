@@ -14,7 +14,9 @@ class ChatAction < Cramp::Websocket
     @sub.close_connection_after_writing
   end
   
-  def received_data(data)
+  def received_data(data)    
+    puts "Receive: #{data}\n"
+    
     msg = parse_json(data)
     case msg[:action]
     when 'join'
@@ -24,6 +26,9 @@ class ChatAction < Cramp::Websocket
     else
       # skip
     end
+    
+    rescue
+      puts "Parsing Error: #{data}"
   end
   
   def call_join
