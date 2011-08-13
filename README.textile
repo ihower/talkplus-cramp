@@ -1,3 +1,40 @@
+h2. talkplus
+
+Talkplus is a project for startup weekend Taipei, it's based https://github.com/lifo/cramp-pub-sub-chat-demo
+
+h2. API
+
+h3. for Host
+
+The host's uid is given when loading javascript.
+
+Client request:
+
+  { :action => "join", :name => "ihower", :channel => "foobar", :uid => "1234567890" }
+  { :action => "message", :message => 'xxxx, :uid => "1234567890" }
+  { :action => "leave", :uid => "1234567890" }
+
+Server response:
+
+  { :action => "block", :uid => "1234567890" }
+  { :action => "allow", :uid => "1234567890" }
+  { :action => "control", :user => "foobar", :message => 'xxxx }
+
+h3. for Guest
+
+Client request:
+
+  { :action => "join", :name => "ihower", :channel => "foobar" }
+  { :action => "message", :message => 'xxxx }
+  { :action => "leave" }
+
+Server response:
+
+  { :action => "assign", :uid => "1234567890" }
+  { :action => "block", :uid => "1234567890" }
+  { :action => "allow", :uid => "1234567890" }
+  { :action => "control", :user => "foobar", :message => 'xxxx }
+
 h2. Cramp chat using Redis Pub/Sub + WebSockets
 
 This is a proof-of-concept application to showcase Cramp's integration with Redis Pub/Sub + WebSockets.
