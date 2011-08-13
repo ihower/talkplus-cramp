@@ -29,16 +29,30 @@ class ChatAction < Cramp::Websocket
     @user = msg[:user]
     @channel = msg[:channel]
     
+    @channel_id = 1 # TODO: get channel_id by channel from mysql
+    @user_id = 1 # TODO: get user_id by token from mysql
+    
     subscribe
     publish :action => 'control', :user => @user, :message => 'joined the chat room'
+          
+    defer = CrampPubsub::Application.db.query "INSERT channel_users (channel_id, user_id, created_at) VALUES ('#{@channel_id}', '#{@user_id}', NOW())"
+    
+    # TODO
+    #defer.callback do |result|
+    #  puts "Result: #{result.inspect}"
+    #  publish :action => 'assign', :uid => '1234567890' 
+    #end
   end
   
   def handle_leave
     publish :action => 'control', :user => @user, :message => 'left the chat room'    
+    CrampPubsub::Application.db.query "DELETE channel_users where channel_id = #{@channel_id} and user_id = #{@user_id}"
   end
   
   def handle_message(msg)
     publish msg.merge(:user => @user, :channel => @channel)
+    content = msg[:message]
+    CrampPubsub::Application.db.query "INSERT messages (channel_id, user_id, name, content, created_at) VALUES ('#{@channel_id}', '#{@user_id}', '#{@user}', '#{content}', NOW());"
   end
   
   private

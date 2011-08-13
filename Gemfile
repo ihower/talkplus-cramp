@@ -8,3 +8,4 @@ gem 'async-rack'
 
 gem 'em-hiredis'
 gem 'yajl-ruby'
+gem 'mysql2'

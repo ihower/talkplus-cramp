@@ -1,5 +1,6 @@
 require "rubygems"
 require "bundler"
+require 'mysql2/em'
 
 module CrampPubsub
   class Application
@@ -17,6 +18,10 @@ module CrampPubsub
       @_routes ||= eval(File.read('./config/routes.rb'))
     end
 
+    def self.db
+      @_db ||= eval(File.read('./config/database.rb'))
+    end
+    
     # Initialize the application
     def self.initialize!
       Cramp::Websocket.backend = :thin

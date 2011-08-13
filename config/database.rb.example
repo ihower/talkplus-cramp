@@ -1,0 +1,4 @@
+Mysql2::EM::Client.new(:host => "localhost", 
+                       :database => "talkplus-development", 
+                       :username => "root",
+                       :password => nil)
