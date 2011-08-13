@@ -1,5 +1,8 @@
 require 'digest/md5'
 class ChatAction < Cramp::Websocket
+  
+  use_fiber_pool
+  
   on_start :create_redis
   on_finish :handle_leave, :destroy_redis
   on_data :received_data
