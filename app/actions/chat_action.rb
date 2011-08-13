@@ -36,10 +36,7 @@ class ChatAction < Cramp::Websocket
       puts "Parsing Error: #{data}"
   end
   
-  def call_join
-    @user_id = result.first["id"]
-    @username ||= result.first["name"]
-    
+  def call_join    
     subscribe
     publish :action => 'control', :user => @username, :message => 'joined the chat room'
   end
