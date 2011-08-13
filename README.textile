@@ -10,7 +10,7 @@ The host's uid is given when loading javascript.
 
 Client request:
 
-  { :action => "join", :name => "ihower", :channel => "foobar", :uid => "1234567890" }
+  { :action => "join", :name => "ihower", :channel => 123, :uid => "1234567890" }
   { :action => "message", :message => 'xxxx, :uid => "1234567890" }
   { :action => "leave", :uid => "1234567890" }
 
@@ -24,7 +24,7 @@ h3. for Guest
 
 Client request:
 
-  { :action => "join", :name => "ihower", :channel => "foobar" }
+  { :action => "join", :name => "ihower", :channel => 123 }
   { :action => "message", :message => 'xxxx }
   { :action => "leave" }
 

@@ -41,8 +41,8 @@ class ChatAction < Cramp::Websocket
   
   def handle_join(msg)
     @username = msg[:user]
-    @channel = msg[:channel]
-    @channel_id = msg[:channel_id] || 1
+    @channel_id = msg[:channel]
+    @channel = "talkplus-#{@channel_id}"
     @uid = msg[:uid]
     
     if @uid
