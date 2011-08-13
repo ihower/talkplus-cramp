@@ -38,6 +38,7 @@ class ChatAction < Cramp::Websocket
   
   def call_join    
     subscribe
+    @pub.sadd @channel, @username
     publish :action => 'control', :user => @username, :message => 'joined the chat room'
   end
   
@@ -56,7 +57,8 @@ class ChatAction < Cramp::Websocket
   end
   
   def handle_leave
-    publish :action => 'control', :user => @username, :message => 'left the chat room'    
+    @pub.srem @channel, @username
+    publish :action => 'control', :user => @username, :message => 'left the chat room'
     finish
   end
   
