@@ -1,6 +1,0 @@
-{ :host => "localhost", 
-  :database => "talkplus-development", 
-  :username => "root",
-  :password => nil,
-  :pool_size => 20
-}

@@ -37,16 +37,11 @@ class ChatAction < Cramp::Websocket
   end
   
   def call_join
-    join_callback = CrampPubsub::Application.db.query "SELECT name, id from users WHERE uid='#{@uid}'"    
-    join_callback.callback do |result|
-      @user_id = result.first["id"]
-      @username ||= result.first["name"]
-
-      subscribe
-      publish :action => 'control', :user => @username, :message => 'joined the chat room'
-
-      CrampPubsub::Application.db.query "INSERT channel_users (channel_id, user_id, created_at) VALUES ('#{@channel_id}', '#{@user_id}', NOW())"            
-    end
+    @user_id = result.first["id"]
+    @username ||= result.first["name"]
+    
+    subscribe
+    publish :action => 'control', :user => @username, :message => 'joined the chat room'
   end
   
   def handle_join(msg)
@@ -59,24 +54,18 @@ class ChatAction < Cramp::Websocket
       call_join           
     else
       @uid = Digest::MD5.hexdigest( rand(1000000).to_s + Time.now.to_s )
-      defer = CrampPubsub::Application.db.query "INSERT users (name, uid, created_at) VALUES ('#{@username}','#{@uid}',NOW());"    
-      defer.callback do |result|
-        call_join     
-      end
-    end
-    
+      call_join     
+    end    
   end
   
   def handle_leave
     publish :action => 'control', :user => @username, :message => 'left the chat room'    
-    CrampPubsub::Application.db.query "DELETE channel_users where channel_id = #{@channel_id} and user_id = #{@user_id}"
     finish
   end
   
   def handle_message(msg)
     publish msg.merge(:user => @username, :channel => @channel)
     content = msg[:message]
-    CrampPubsub::Application.db.query "INSERT messages (channel_id, user_id, name, content, created_at) VALUES ('#{@channel_id}', '#{@user_id}', '#{@username}', '#{content}', NOW());"
   end
   
   private

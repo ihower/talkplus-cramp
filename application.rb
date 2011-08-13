@@ -1,8 +1,5 @@
 require "rubygems"
 require "bundler"
-require 'mysql2/em'
-require "em-synchrony"
-require "em-synchrony/connection_pool"
 
 module CrampPubsub
   class Application
@@ -20,16 +17,6 @@ module CrampPubsub
       @_routes ||= eval(File.read('./config/routes.rb'))
     end
 
-    def self.db
-      @_db_config ||= eval(File.read('./config/database.rb'))
-      @_db ||= EventMachine::Synchrony::ConnectionPool.new( :size => @_db_config[:pool_size] || 10 ) do
-        Mysql2::EM::Client.new(:host => @_db_config[:host], 
-                               :database => @_db_config[:database], 
-                               :username => @_db_config[:username], 
-                               :password => @_db_config[:password] )
-      end
-    end
-    
     # Initialize the application
     def self.initialize!
       Cramp::Websocket.backend = :thin
