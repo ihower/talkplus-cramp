@@ -7,9 +7,13 @@ class ChatAction < Cramp::Websocket
   on_finish :handle_leave, :destroy_redis
   on_data :received_data
   
-  def create_redis
+  def create_redis  
     @pub = EM::Hiredis.connect("redis://localhost:6379")
     @sub = EM::Hiredis.connect("redis://localhost:6379")
+    rescue => e
+      CrampPubsub::Application.logger.error "Error in create_redis: #{e}"
+      render '{ "action": "control", "message": "We are full, sorry!", "users_count": 65535 }'
+      finish
   end
   
   def destroy_redis    
