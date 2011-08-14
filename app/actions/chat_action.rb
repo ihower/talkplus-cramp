@@ -12,9 +12,11 @@ class ChatAction < Cramp::Websocket
     @sub = EM::Hiredis.connect("redis://localhost:6379")
   end
   
-  def destroy_redis
-    @pub.close_connection_after_writing
-    @sub.close_connection_after_writing
+  def destroy_redis    
+      @pub.close_connection_after_writing
+      @sub.close_connection_after_writing
+    rescue => e
+      CrampPubsub::Application.logger.error "Error in destroy_redis: #{e}"
   end
   
   def received_data(data)
