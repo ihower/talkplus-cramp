@@ -19,7 +19,7 @@ class ChatAction < Cramp::Websocket
   
   def received_data(data)
     begin
-      puts "Receive: #{data}\n" if ENV['RACK_ENV'] == "development"
+      CrampPubsub::Application.logger.debug "Receive: #{data}\n"
       
       msg = parse_json(data)
       case msg[:action]
@@ -32,18 +32,19 @@ class ChatAction < Cramp::Websocket
       else
         # skip
       end    
-    rescue
-      puts "Error: #{data}" if ENV['RACK_ENV'] == "development"
+    rescue => e
+      CrampPubsub::Application.logger.error "Error in received_data: |#{data}| #{e}"
     end
   end
   
-  def call_join    
+  def call_join   
     subscribe
     @pub.sadd @channel, @username
     
     @pub.scard(@channel).callback do |value|
       publish :action => 'control', :user => @username, :message => "joined the chat room. We have #{value} people now!"
-    end
+      CrampPubsub::Application.logger.info "#{@username} join #{@channel}, #{value} people"
+    end        
   end
   
   def handle_join(msg)
@@ -61,16 +62,16 @@ class ChatAction < Cramp::Websocket
   end
   
   def handle_leave
-    begin
-      puts "#{@username} call handle_leave" if ENV['RACK_ENV'] == "development"
+    begin      
       @pub.srem @channel, @username
       
       @pub.scard(@channel).callback do |value|
         publish :action => 'control', :user => @username, :message => "left the chat room. We have #{value} people."
-        finish
+        CrampPubsub::Application.logger.info "#{@username} leave #{@channel}, #{value} people"
+        finish        
       end      
-    rescue
-      # nothing
+    rescue => e
+      CrampPubsub::Application.logger.error "Error in handle_leave: #{e}"
     ensure
       finish
     end

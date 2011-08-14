@@ -1,5 +1,6 @@
 require "rubygems"
 require "bundler"
+require 'logger'
 
 module CrampPubsub
   class Application
@@ -10,16 +11,26 @@ module CrampPubsub
     end
 
     def self.env
-      @_env ||= ENV['RACK_ENV'] || 'development'
+      @_env ||= ENV['RACK_ENV'] || 'development'      
     end
 
     def self.routes
       @_routes ||= eval(File.read('./config/routes.rb'))
     end
 
+    def self.logger
+      @_logger ||= Logger.new( root + "/log/#{@_env}.log", 10, 100 * 1024 * 1024) # 100mb            
+    end
+    
     # Initialize the application
     def self.initialize!
       Cramp::Websocket.backend = :thin
+      
+      if env == "development"
+        logger.level = Logger::DEBUG
+      else
+        logger.level = Logger::INFO
+      end
     end
 
   end

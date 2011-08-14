@@ -44,7 +44,7 @@ h2. Running the application
 Make sure you have "Redis":http://redis.io/ up and running.
 
 $ bundle install
-$ sudo RACK_ENV=production bundle exec thin --timeout 0 --port 80 start
+$ sudo RACK_ENV=production bundle exec thin --timeout 0 --port 80 start &
 
 You should now see the application running at "http://0.0.0.0:3000":http://0.0.0.0:3000 
 
