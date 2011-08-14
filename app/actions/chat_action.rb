@@ -72,7 +72,6 @@ class ChatAction < Cramp::Websocket
       end      
     rescue => e
       CrampPubsub::Application.logger.error "Error in handle_leave: #{e}"
-    ensure
       finish
     end
   end
