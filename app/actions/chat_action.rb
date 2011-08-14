@@ -18,6 +18,9 @@ class ChatAction < Cramp::Websocket
   end
   
   def received_data(data)
+    data.chop!
+    return if data == ""
+    
     begin
       CrampPubsub::Application.logger.debug "Receive: #{data}\n"
       
