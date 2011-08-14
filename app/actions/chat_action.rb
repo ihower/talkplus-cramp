@@ -17,23 +17,24 @@ class ChatAction < Cramp::Websocket
     @sub.close_connection_after_writing
   end
   
-  def received_data(data)    
-    puts "Receive: #{data}\n" if ENV['RACK_ENV'] == "development"
-    
-    msg = parse_json(data)
-    case msg[:action]
-    when 'join'
-      handle_join(msg)
-    when 'message'
-      handle_message(msg)
-    when 'leave'
-      handle_leave    
-    else
-      # skip
-    end
-    
+  def received_data(data)
+    begin
+      puts "Receive: #{data}\n" if ENV['RACK_ENV'] == "development"
+      
+      msg = parse_json(data)
+      case msg[:action]
+      when 'join'
+        handle_join(msg)
+      when 'message'
+        handle_message(msg)
+      when 'leave'
+        handle_leave    
+      else
+        # skip
+      end    
     rescue
-      puts "Parsing Error: #{data}" if ENV['RACK_ENV'] == "development"
+      puts "Error: #{data}" if ENV['RACK_ENV'] == "development"
+    end
   end
   
   def call_join    
@@ -60,11 +61,17 @@ class ChatAction < Cramp::Websocket
   end
   
   def handle_leave
-    puts "#{@username} call handle_leave" if ENV['RACK_ENV'] == "development"
-    @pub.srem @channel, @username
-    
-    @pub.scard(@channel).callback do |value|
-      publish :action => 'control', :user => @username, :message => "left the chat room. We have #{value} people."
+    begin
+      puts "#{@username} call handle_leave" if ENV['RACK_ENV'] == "development"
+      @pub.srem @channel, @username
+      
+      @pub.scard(@channel).callback do |value|
+        publish :action => 'control', :user => @username, :message => "left the chat room. We have #{value} people."
+        finish
+      end      
+    rescue
+      # nothing
+    ensure
       finish
     end
   end
