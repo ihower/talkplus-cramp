@@ -47,7 +47,9 @@ class ChatAction < Cramp::Websocket
     @pub.sadd @channel, @username
     
     @pub.scard(@channel).callback do |value|
-      publish :action => 'control', :user => @username, :message => "joined the chat room. We have #{value} people now!"
+      publish :action => 'control', :user => @username, 
+              :message => "joined the chat room. We have #{value} people now!",
+              :users_count => value
       CrampPubsub::Application.logger.info "#{@username} join #{@channel}, #{value} people"
     end        
   end
@@ -71,7 +73,7 @@ class ChatAction < Cramp::Websocket
       @pub.srem @channel, @username
       
       @pub.scard(@channel).callback do |value|
-        publish :action => 'control', :user => @username, :message => "left the chat room. We have #{value} people."
+        publish :action => 'control', :user => @username, :message => "left the chat room. We have #{value} people.", :users_count => value
         CrampPubsub::Application.logger.info "#{@username} leave #{@channel}, #{value} people"
         finish        
       end      
