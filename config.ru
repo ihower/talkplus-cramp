@@ -2,12 +2,12 @@ require './application'
 CrampPubsub::Application.initialize!
 
 # Development middlewares
-if CrampPubsub::Application.env == 'development'
-  use AsyncRack::CommonLogger
-
+#if CrampPubsub::Application.env == 'development'
+#  use AsyncRack::CommonLogger
+#
   # Enable code reloading on every request
-  use Rack::Reloader, 0
-end
+#  use Rack::Reloader, 0
+#end
 
 # Running thin :
 #
