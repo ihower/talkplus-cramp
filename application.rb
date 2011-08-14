@@ -19,7 +19,7 @@ module CrampPubsub
     end
 
     def self.logger
-      @_logger ||= Logger.new( root + "/log/#{@_env}.log", 10, 100 * 1024 * 1024) # 100mb            
+      @_logger ||= Logger.new( root + "/log/#{env}.log", 10, 100 * 1024 * 1024) # 100mb            
     end
     
     # Initialize the application
@@ -43,3 +43,30 @@ require 'yajl'
 
 # Preload application classes
 Dir['./app/**/*.rb'].each {|f| require f}
+
+# Patch to rescue every exceptions
+class Thin::Connection
+  # Called when data is received from the client.
+  def receive_data(data)
+    trace { data }
+
+    case @serving
+    when :websocket
+      callback = @request.env[Thin::Request::WEBSOCKET_RECEIVE_CALLBACK]
+      callback.call(data) if callback
+    else
+      if @request.parse(data)
+        if @request.websocket?
+          @response.persistent!
+          @response.websocket_upgrade_data = @request.websocket_upgrade_data
+          @serving = :websocket
+        end
+
+        process
+      end
+    end
+  rescue => e    
+    CrampPubsub::Application.logger.error("Thin error: #{data}")
+    close_connection
+  end
+end
