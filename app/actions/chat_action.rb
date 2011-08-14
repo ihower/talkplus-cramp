@@ -18,7 +18,7 @@ class ChatAction < Cramp::Websocket
   end
   
   def received_data(data)    
-    puts "Receive: #{data}\n"
+    puts "Receive: #{data}\n" if ENV['RACK_ENV'] == "development"
     
     msg = parse_json(data)
     case msg[:action]
@@ -33,7 +33,7 @@ class ChatAction < Cramp::Websocket
     end
     
     rescue
-      puts "Parsing Error: #{data}"
+      puts "Parsing Error: #{data}" if ENV['RACK_ENV'] == "development"
   end
   
   def call_join    
@@ -60,7 +60,7 @@ class ChatAction < Cramp::Websocket
   end
   
   def handle_leave
-    puts "#{@username} call handle_leave"
+    puts "#{@username} call handle_leave" if ENV['RACK_ENV'] == "development"
     @pub.srem @channel, @username
     
     @pub.scard(@channel).callback do |value|
